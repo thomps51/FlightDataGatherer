@@ -10,12 +10,18 @@ def getDataArrayFromClassName(browser, className, filterWords , arrayFunc):
     text = line.text
     array = text.split('\n')
     itemsToRemove = []
-    for item in array:
+    for ii in range(0,len(array)):
       for test in filterWords:
-        if test in item:
-          itemsToRemove.append(item)
-    for item in itemsToRemove:
-      array.remove(item)
+        item = array[ii]
+        if test in item :
+          itemsToRemove.append(ii)
+  
+    itemsToRemove1=list(set(itemsToRemove))
+    itemsToRemove1.sort(reverse=True)
+
+    for item in itemsToRemove1:
+#      array.remove(item)
+      array.pop(item)
     returned = arrayFunc(array)
     if returned is not None:
       finalArray.append(returned)
@@ -38,18 +44,28 @@ def noFilter(array):
 
 def departureFilter(array):
   if 'Departing' in array[0]:
+    if "pm" in array[2]:
+      array[2] = array[2].split("pm")[0] + "pm"
+    else:
+      array[2] = array[2].split("am")[0] + "am"
     return datetime.strptime(array[1] + ' ' + array[2], '%a, %b %d %I:%M %p')
 
 def arrivalFilter(array):
   if 'Arriving' in array[0]:
+    if "pm" in array[2]:
+      array[2] = array[2].split("pm")[0] + "pm"
+    else:
+      array[2] = array[2].split("am")[0] + "am"
     return datetime.strptime(array[1] + ' ' + array[2], '%a, %b %d %I:%M %p')
 
 def nStopsFilter(array):
-  stops = array[1]
+  nums = [int(s) for s in array[-1].split() if s.isdigit()]
+  stops = array[0]
+
   if 'Nonstop' in stops:
     return float(0)
   else:
-    return float(stops[0])
+    return float(nums[0])
 
 
 def getDataArrayFromClassNameHidden(browser, className): 
