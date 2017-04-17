@@ -8,44 +8,41 @@ def writeToSqlDatabase(tables) :
   print "writing to database" 
   db = MySQLdb.connect(host="localhost",    # your host, usually localhost
                        user="root",         # your username
-                       passwd="",  # your password
+                       passwd="flightInfoDb",  # your password
                        db="flightinfo")        # name of the data base
 
 
   cur = db.cursor()
-  cur.execute("SELECT * FROM PriceHistory")
-  print "current entries"
-  for row in cur.fetchall():
-      print row[0]
-  print "here"
 
-#  priceHistories = tables[0]
-#  for priceHistory in priceHistories:
-#    query="""INSERT IGNORE INTO PriceHistory (FlightUniqueId, Economy, Business, First, PriceDate)
-#      VALUES ('"""+str(priceHistory.flightUniqueId) + "'," + str(priceHistory.economyFare) + "," \
-#      + str(priceHistory.businessFare) + "," + str(priceHistory.firstFare) + ",'" + str(priceHistory.dateOfPrice) + "');"
-#    print query
-#    cur.execute(query)
+  priceHistories = tables[0]
+  for priceHistory in priceHistories:
+    query="""INSERT IGNORE INTO PriceHistory (FlightUniqueId, Economy, Business, First, PriceDate)
+      VALUES ('"""+str(priceHistory.flightUniqueId) + "'," + str(priceHistory.economyFare) + "," \
+      + str(priceHistory.businessFare) + "," + str(priceHistory.firstFare) + ",'" + str(priceHistory.dateOfPrice) + "');"
+    cur.execute(query)
 
   flightInfos = tables[1]
   for flightInfo in flightInfos:
-    query="INSERT IGNORE INTO FLIGHTINFO (FlightUniqueId, Duration, DepartureTime, ArrivalTime, NumStops, DepartureCode, ArrivalCode, Airlines)
-      VALUES ("+str(flightInfo.flightUniqueId) + "," + str(flightInfo.duration) + "," + str(flightInfo.departureTime) + 
-      "," + str(flightInfo.arrivalTime) + "," + str(flightInfo.nStops) + str(flightInfo.departureCode) + "," str(flightInfo.arrivalCode) +
-      "," + str(flightInfo.airline) + ");"
+    query="""INSERT IGNORE INTO FLIGHTINFO (FlightUniqueId, Duration, DepartureTime, ArrivalTime, NumStops, DepartureCode, ArrivalCode, Airline)
+      VALUES ('"""+str(flightInfo.flightUniqueId) + "','" + str(flightInfo.duration) + "','" + str(flightInfo.departureTime) + \
+      "','" + str(flightInfo.arrivalTime) + "'," + str(flightInfo.nStops) + ",'" + str(flightInfo.departureCode) + "','" + str(flightInfo.arrivalCode) + \
+      "','" + str(flightInfo.airline) + "');"
     cur.execute(query)
-#
-#  flightStops=tables[2]
-#  for flightStop in flightStops:
-#    query="INSERT IGNORE INTO FlightStop (FlightUniqueId,FlightNumber,PlaneType,DepartureLocation,ArrivalLocation) VALUES ("+
-#      str(flightStop.flightUniqueId) + "," + str(flightStop.flightNumber) + "," + str(flightStop.planeType) + "," + str(flightStop.departureCode) + "," + str(flightStop.arrivalCode) + ");"
-#    cur.execute(query)
-#
-#  layovers=tables[3]
-#  for layover in layovers:
-#    query="INSERT IGNORE INTO FlightLayover (FlightUniqueId, FlightNumber1,FlightNumber2,LayoverDuration) VALUES (" +
-#      str(layover.flightUniqueId) + "," + str(layover.flightNum1) + "," + str(layover.fligtNum2) + "," + str(layover.duration) + ");"
-#    cur.execute(query)
+
+  flightStops=tables[2]
+  for flightStop in flightStops:
+    query="INSERT IGNORE INTO FlightStop (FlightUniqueId,FlightNumber,PlaneType,DepartureLocation,ArrivalLocation) VALUES ('"+ \
+      str(flightStop.flightUniqueId) + "','" + str(flightStop.flightNumber) + "','" + str(flightStop.planeType) + "','" + \
+      str(flightStop.departureCode) + "','" + str(flightStop.arrivalCode) + "');"
+    cur.execute(query)
+    
+
+  layovers=tables[3]
+  for layover in layovers:
+    query="INSERT IGNORE INTO FlightLayover (FlightUniqueId, FlightNumber1,FlightNumber2,LayoverDuration) VALUES ('" + \
+      str(layover.flightUniqueId) + "','" + str(layover.flightNum1) + "','" + str(layover.flightNum2) + "','" + str(layover.duration) + "');"
+    cur.execute(query)
+  
   db.commit()
   db.close()
 
@@ -69,7 +66,7 @@ def getFlightData(departureAirports, arrivalAirports, startingDate, numDays):
 #        pp = Process(target=worker, args=(i, startingDateObj, currDateTime, arrivalCode, departureCode, q,))
 #        procs.append(pp)
  
-  maxThreads=2
+  maxThreads=4
 
   currThreads=0
   tmpProcs = []

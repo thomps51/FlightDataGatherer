@@ -1,4 +1,3 @@
-
 import UnitedDriver
 
 
@@ -9,6 +8,6 @@ departureAirports = ["PHL"]
 arrivalAirports = ["TYO"]
 
 startingDate = '2017-05-30'
-numDays      = 1
+numDays      = 4
 
 UnitedDriver.getFlightData(departureAirports, arrivalAirports, startingDate, numDays)

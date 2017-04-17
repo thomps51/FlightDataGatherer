@@ -52,6 +52,30 @@ def saveClassListToCSV(csvName, objects):
   f.close()
   print "write finished"
 
+def convertTime(text):
+  hours=''
+  minutes=''
+  foundHours=False
+  for char in text:
+    if char.isdigit() and not foundHours:
+      hours= hours + char
+    elif char == 'h':
+      foundHours=True
+    elif char.isdigit() and foundHours:
+      minutes = minutes + char
+  if len(hours) == 0:
+    hours="00"
+  elif len(hours) == 1:
+    hours="0"+hours
+  
+  if len(minutes) == 0:
+    minutes="00"
+  elif len(minutes) == 1:
+    minutes="0" + minutes
+  
+  returned=str(hours) + ":" + minutes + ":00"
+  return returned
+
 # inputs to URL are:
 # Departure Airport
 # Arrival Airport
@@ -66,8 +90,8 @@ def saveClassListToCSV(csvName, objects):
 
 def getUnitedFlights(departureCode, arrivalCode, departureDate):
  
-  debug=True
-#  debug=False
+#  debug=True
+  debug=False
   
   url = 'https://www.united.com/ual/en/us/flight-search/book-a-flight/results/rev?f='+departureCode+'&t='+arrivalCode+'&d='+departureDate+'&tt=1&ct=1&sc=7&px=1&taxng=1&idx=1'
 
@@ -110,17 +134,46 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate):
   
   # these each have one per flight
   fares           = getDataArrayFromClassName(browser, "flight-block-fares-container", ["lowest","Mixed","ticket","Economy","Select"], fareFilter) 
-  durations       = getDataArrayFromClassName(browser, "flight-summary-bottom", [], defaultFilter) 
-  departureTimes  = getDataArrayFromClassName(browser, "flight-time", [], departureFilter) 
-  arrivalTimes    = getDataArrayFromClassName(browser, "flight-time", [], arrivalFilter) 
+#  durations       = getDataArrayFromClassName(browser, "flight-summary-bottom", [], defaultFilter) 
+  
+  
+  departureTimes1  = getDataArrayFromClassName(browser, "flight-time", [], departureFilter) 
+  
+  departureTimes = []
+#conver depature time
+  years=datetime.strptime(departureDate, '%Y-%m-%d').year
+  for departureTime in departureTimes1:
+    departureTime = departureTime.replace(year=years)
+    departureTimes.append(departureTime)
+  
+  arrivalTimes = []
+  arrivalTimes1    = getDataArrayFromClassName(browser, "flight-time", [], arrivalFilter) 
+  for arrivalTime in arrivalTimes1:
+    arrivalTime = arrivalTime.replace(year=years)
+    arrivalTimes.append(arrivalTime)
+  
   nStops          = getDataArrayFromClassName(browser, "flight-connection-container", [], nStopsFilter)  
 
   # these have multiple per flights
   flightIds         = getDataArrayFromClassNameHidden(browser, 'segment-flight-number')
   planes            = getDataArrayFromClassNameHidden(browser, 'segment-aircraft-type')
-  layoverDurations  = getDataArrayFromClassNameHiddenRaw(browser, 'connection-separator')
+  layoverDurations1  = getDataArrayFromClassNameHiddenRaw(browser, 'connection-separator')
+ 
+  layoverDurations = []
+  for duration in layoverDurations1:
+    timeText = convertTime(duration)
+    layoverDurations.append(timeText)
+  
   flightArriveAndDepartLocation  = getDataArrayFromClassNameHiddenFlights(browser, 'segment-market')
 
+
+  elements = browser.find_elements_by_xpath('//a[@class="'+ 'flight-duration otp-tooltip-trigger' +'"]')
+  durations=[]
+  for line in elements:
+    text = line.text
+    timeText = convertTime(text)
+    durations.append(timeText)
+    
   print "packaging data..."
 
   curDate =datetime.strftime( datetime.now(), '%Y-%m-%d_%H:%M:%S')
@@ -196,13 +249,13 @@ def worker(i, startingDateObj, currDateTime, departureCode, arrivalCode, q):
   tables = getUnitedFlights(departureCode, arrivalCode, currDepartureDateStr)
   print "saving data..."
   q.put(tables)
-  for table in tables:
-#    q.put(0) #this works...
-    if len(table) > 0:
-      tableName=type(table[0]).__name__
-      saveClassListToCSV("flights_united_"+tableName+"_"+currDepartureDateStr+"_"+currDateTime,table)
-    else:
-      print "table is empty!"
+#  for table in tables:
+##    q.put(0) #this works...
+#    if len(table) > 0:
+#      tableName=type(table[0]).__name__
+#      saveClassListToCSV("flights_united_"+tableName+"_"+currDepartureDateStr+"_"+currDateTime,table)
+#    else:
+#      print "table is empty!"
   print "end worker"
 def writerF(q) :
   print "calling writer"
