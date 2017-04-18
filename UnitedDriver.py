@@ -1,7 +1,7 @@
 from flightInfo import *
 from multiprocessing import Queue, Process
 import MySQLdb
-
+import warnings
 
 def writeToSqlDatabase(tables) :
 #def writeToSqlDatabase() :
@@ -11,7 +11,7 @@ def writeToSqlDatabase(tables) :
                        passwd="flightInfoDb",  # your password
                        db="flightinfo")        # name of the data base
 
-
+  warnings.filterwarnings('ignore', category=MySQLdb.Warning)
   cur = db.cursor()
 
   priceHistories = tables[0]
@@ -66,7 +66,7 @@ def getFlightData(departureAirports, arrivalAirports, startingDate, numDays):
 #        pp = Process(target=worker, args=(i, startingDateObj, currDateTime, arrivalCode, departureCode, q,))
 #        procs.append(pp)
  
-  maxThreads=4
+  maxThreads=2
 
   currThreads=0
   tmpProcs = []

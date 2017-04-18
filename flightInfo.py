@@ -125,7 +125,7 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate):
 #  if check_link_exists(browser,"fl-results-pagerShowAll"):
     browser.find_element_by_id("fl-results-pagerShowAll").click();
     print "getting all results..."
-    time.sleep(5)
+    time.sleep(15)
   
   # debug output
   f = open("html2.out","w") 
@@ -187,8 +187,14 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate):
     numStops = int(nStops[i])
     flightIdStr=""
     
+    flag = False
     for j in range(stopIndex, stopIndex + numStops + 1):
+      if j>= len(flightIds) :
+          flag=True
+          continue
       flightIdStr= flightIdStr + flightIds[j]
+    if flag :
+      break
     flightIdStr = flightIdStr + str(departureTimes[i])
     flightUniqueId = hashlib.md5(flightIdStr).hexdigest()  
     
