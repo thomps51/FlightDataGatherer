@@ -2,6 +2,7 @@ from flightInfo import *
 from multiprocessing import Queue, Process
 import MySQLdb
 import warnings
+from datetime import datetime, timedelta
 
 def writeToSqlDatabase(tables) :
 #def writeToSqlDatabase() :
@@ -14,11 +15,23 @@ def writeToSqlDatabase(tables) :
   warnings.filterwarnings('ignore', category=MySQLdb.Warning)
   cur = db.cursor()
 
+  curDate =datetime.strftime( datetime.now(), '%Y-%m-%d_%H:%M:%S')
+
   priceHistories = tables[0]
   for priceHistory in priceHistories:
+
+    query="""SELECT Economy,Business,First FROM PriceHistory WHERE FlightUniqueId='""" + priceHistory.flightUniqueId  + """' ORDER BY PriceDate DESC LIMIT 1;"""
+    cur.execute(query)
+    noPriceChange=False
+    for row in cur.fetchall():
+      if(row[0] == priceHistory.economyFare and row[1] == priceHistory.businessFare and row[2] == priceHistory.firstFare):
+          noPriceChange=True
+    if noPriceChange:
+      continue
+
     query="""INSERT IGNORE INTO PriceHistory (FlightUniqueId, Economy, Business, First, PriceDate)
       VALUES ('"""+str(priceHistory.flightUniqueId) + "'," + str(priceHistory.economyFare) + "," \
-      + str(priceHistory.businessFare) + "," + str(priceHistory.firstFare) + ",'" + str(priceHistory.dateOfPrice) + "');"
+      + str(priceHistory.businessFare) + "," + str(priceHistory.firstFare) + ",'" + str(curDate) + "');"
     cur.execute(query)
 
   flightInfos = tables[1]
