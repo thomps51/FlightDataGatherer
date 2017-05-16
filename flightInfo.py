@@ -134,11 +134,7 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate):
   
   # these each have one per flight
   fares           = getDataArrayFromClassName(browser, "flight-block-fares-container", ["lowest","Mixed","ticket","Economy","Select"], fareFilter) 
-#  durations       = getDataArrayFromClassName(browser, "flight-summary-bottom", [], defaultFilter) 
-  
-  
-  departureTimes1  = getDataArrayFromClassName(browser, "flight-time", [], departureFilter) 
-  
+  departureTimes1 = getDataArrayFromClassName(browser, "flight-time", [], departureFilter) 
   departureTimes = []
 #conver depature time
   years=datetime.strptime(departureDate, '%Y-%m-%d').year
