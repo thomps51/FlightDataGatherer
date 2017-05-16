@@ -243,6 +243,10 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate):
         l.flightUniqueId = flightUniqueId
         l.flightNum1     = flightIds[j-1]
         l.flightNum2     = flightIds[j]
+        if layoverIndex >= len(layoverDurations) :
+          print "ERROR: incorrect number of layovers on page" 
+          print str(layoverIndex) + " " + str(len(layoverDurations))
+          continue
         l.duration       = layoverDurations[layoverIndex]
         layovers.append(l) 
         layoverIndex = layoverIndex + 1
