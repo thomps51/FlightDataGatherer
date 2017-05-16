@@ -1,6 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
-from selenium.common.exceptions import NoSuchElementException  
+from selenium.common.exceptions import NoSuchElementException, ElementNotVisibleException 
 import time
 from datetime import datetime, timedelta
 import re
@@ -123,7 +123,11 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate):
   
   if not debug and check_link_exists(browser,"fl-results-pagerShowAll"):
 #  if check_link_exists(browser,"fl-results-pagerShowAll"):
-    browser.find_element_by_id("fl-results-pagerShowAll").click();
+    
+    try:  
+      browser.find_element_by_id("fl-results-pagerShowAll").click();
+    except ElementNotVisibleException:
+     print "ELEMENTNOTVISIBLE not sure what went wrong.  Keep going I guess" 
     print "getting all results..."
     time.sleep(15)
   
@@ -235,6 +239,10 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate):
         l.flightUniqueId = flightUniqueId
         l.flightNum1     = flightIds[j-1]
         l.flightNum2     = flightIds[j]
+        if layoverIndex >= len(layoverDurations) :
+          print "ERROR: incorrect number of layovers on page" 
+          print str(layoverIndex) + " " + str(len(layoverDurations))
+          continue
         l.duration       = layoverDurations[layoverIndex]
         layovers.append(l) 
         layoverIndex = layoverIndex + 1
