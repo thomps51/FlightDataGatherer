@@ -91,6 +91,10 @@ def convertTime(text):
 # number of stops
 
 def getUnitedFlights(departureCode, arrivalCode, departureDate, urlNum):
+    priceHistories  = []
+    flightInfos     = []
+    flightStops     = []
+    layovers        = []
  
 #  debug=True
     debug=False
@@ -119,7 +123,8 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate, urlNum):
     print("loading page...")
     
     if not debug:
-        while True:
+      numTries=0  
+      while True:
             print "testing fares"
             columnElements = browser.find_elements_by_xpath('//div[contains(@class,"fare-column-headers")]//a[@href="#"]')
             if len(columnElements) > 0:
@@ -131,6 +136,11 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate, urlNum):
             else:
                 print "fares not found.  sleeping..."
                 time.sleep(5)
+                numTries+=1
+                if numTries > 10:
+                  print("Timeout! Returning Empty lists")
+                  return (priceHistories, flightInfos, flightStops, layovers)          
+
 
     html = browser.execute_script("return document.getElementsByTagName('html')[0].innerHTML")
     # debug output
@@ -140,10 +150,6 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate, urlNum):
 
 
 
-    priceHistories  = []
-    flightInfos     = []
-    flightStops     = []
-    layovers        = []
     if not debug and check_link_exists(browser,"fl-results-pagerShowAll"):
         try:   
             element = browser.find_element_by_id("fl-results-pagerShowAll");
@@ -151,6 +157,7 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate, urlNum):
         except ElementNotVisibleException:
             print "ELEMENTNOTVISIBLE not sure what went wrong.  Keep going I guess" 
         print "getting all results..."
+        numTries=0  
         while True:
             print "testing fares"
             try:
@@ -163,6 +170,10 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate, urlNum):
             else:
                 print "fares not found.  sleeping..."
                 time.sleep(5)
+                numTries+=1
+                if numTries > 10:
+                  print("Timeout! Returning Empty lists")
+                  return (priceHistories, flightInfos, flightStops, layovers)          
     else :
         print "Show all does not exist?"
 #    columnsElements = browser.find_elements_by_xpath('//div[contains(@class,"fare-column-headers")]//a[@href="#" and @style]')
@@ -181,9 +192,12 @@ def getUnitedFlights(departureCode, arrivalCode, departureDate, urlNum):
     print(priceColumns)
     
     # case where one column isn't shown
-    if not len(priceColumns) == len(fares[0]):
-        priceColumns.remove("Economy")
-    
+    if len(priceColumns) > len(fares[0]):
+        print("More Header columns than fares!")
+        print(priceColumns)
+        print(len(fares[0]))
+        print("Attempting to fix by removing first priceColumn")
+        del priceColumns[0] 
     # these each have one per flight
     print("Getting Fares")
     fares = getDataArrayFromClassName(browser, "flight-block-fares-container", ["lowest","Mixed","ticket","Economy","Select"], fareFilter) 
